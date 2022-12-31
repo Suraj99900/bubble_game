@@ -1,5 +1,7 @@
 import 'package:bubble_game/button.dart';
+import 'package:bubble_game/player.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -13,13 +15,21 @@ class _HomePageState extends State<HomePage> {
 
   void moveLeft() {
     setState(() {
-      playerX -= 0.2;
+      if (playerX - 0.2 < -1) {
+        //do nothing
+      } else {
+        playerX -= 0.2;
+      }
     });
   }
 
   void moveRight() {
     setState(() {
-      playerX += 0.2;
+      if (playerX + 0.2 > 1) {
+        //do nothing
+      } else {
+        playerX += 0.2;
+      }
     });
   }
 
@@ -27,53 +37,58 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Expanded(
-          flex: 3,
-          child: Container(
-            color: Colors.pink[100],
-            child: Center(
-              child: Stack(
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(50),
-                    child: Container(
-                      alignment: Alignment(playerX, 1),
-                      child: Container(
-                        color: Colors.purple,
-                        height: 50,
-                        width: 50,
-                      ),
-                    ),
-                  )
-                ],
+    return RawKeyboardListener(
+      focusNode: FocusNode(),
+      autofocus: true,
+      onKey: (event) {
+        if (event.isKeyPressed(LogicalKeyboardKey.arrowLeft)) {
+          moveLeft();
+        } else if (event.isKeyPressed(LogicalKeyboardKey.arrowRight)) {
+          moveRight();
+        } else if (event.isKeyPressed(LogicalKeyboardKey.space)) {
+          moveFire();
+        }
+      },
+      child: Column(
+        children: [
+          Expanded(
+            flex: 3,
+            child: Container(
+              color: Colors.pink[100],
+              child: Center(
+                child: Stack(
+                  children: [
+                    MyPlayer(
+                      playerX: playerX,
+                    )
+                  ],
+                ),
               ),
             ),
           ),
-        ),
-        Expanded(
-            child: Container(
-          color: Colors.grey,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              MyButton(
-                icon: Icons.arrow_back,
-                function: moveLeft,
-              ),
-              MyButton(
-                icon: Icons.arrow_upward,
-                function: moveFire,
-              ),
-              MyButton(
-                icon: Icons.arrow_forward,
-                function: moveRight,
-              ),
-            ],
-          ),
-        ))
-      ],
+          Expanded(
+              child: Container(
+            color: Colors.grey,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                MyButton(
+                  icon: Icons.arrow_back,
+                  function: moveLeft,
+                ),
+                MyButton(
+                  icon: Icons.arrow_upward,
+                  function: moveFire,
+                ),
+                MyButton(
+                  icon: Icons.arrow_forward,
+                  function: moveRight,
+                ),
+              ],
+            ),
+          ))
+        ],
+      ),
     );
   }
 }
