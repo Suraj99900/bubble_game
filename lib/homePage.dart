@@ -35,10 +35,13 @@ class _HomePageState extends State<HomePage> {
   void startGame() {
     Timer.periodic(Duration(milliseconds: 50), (timer) {
       if (ballX - 0.03 < -1) {
+        //  if the ball hits the left , then change direction to right
         ballDirection = direction.RIGHT;
       } else if (ballX + 0.03 > 1) {
+        //  if the ball hits the left , then change direction to right
         ballDirection = direction.LEFT;
       }
+      // move the ball in the correct direction
       if (ballDirection == direction.LEFT) {
         setState(() {
           ballX -= 0.03;
@@ -94,13 +97,28 @@ class _HomePageState extends State<HomePage> {
         });
 
         if (missileHeight > MediaQuery.of(context).size.height * 3 / 4) {
-          //stop missile
+          //stop missile when it reach top of the screen
+
           resetMissile();
           timer.cancel();
           midShot = false;
         }
+        //check if missile has hit ball
+        if (ballY > heightToCoordinate(missileHeight) &&
+            (ballX - missileX).abs() < 0.03) {
+          resetMissile();
+          ballY = 5;
+          timer.cancel();
+        }
       });
     }
+  }
+
+  // convert hight to coordinate
+  double heightToCoordinate(double height) {
+    double totalHeight = MediaQuery.of(context).size.height * 3 / 4;
+    double missileY = 1 - 2 * height / totalHeight;
+    return missileY;
   }
 
   void resetMissile() {
