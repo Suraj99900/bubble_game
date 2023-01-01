@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:bubble_game/button.dart';
+import 'package:bubble_game/missile.dart';
 import 'package:bubble_game/player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,7 +14,12 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  double playerX = 0;
+  static double playerX = 0;
+
+  //missilevariable
+  double missileX = playerX;
+  double missileY = 1;
+  double missileHeight = 10;
 
   void moveLeft() {
     setState(() {
@@ -20,6 +28,7 @@ class _HomePageState extends State<HomePage> {
       } else {
         playerX -= 0.2;
       }
+      missileX = playerX;
     });
   }
 
@@ -30,10 +39,28 @@ class _HomePageState extends State<HomePage> {
       } else {
         playerX += 0.2;
       }
+      missileX = playerX;
     });
   }
 
-  void moveFire() {}
+  void moveFire() {
+    Timer.periodic(Duration(milliseconds: 20), (timer) {
+      if (missileHeight > MediaQuery.of(context).size.height * 3 / 4) {
+        //stop missile
+        resetMissile();
+        timer.cancel();
+      } else {
+        setState(() {
+          missileHeight += 10;
+        });
+      }
+    });
+  }
+
+  void resetMissile() {
+    missileX = playerX;
+    missileHeight = 10;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,9 +85,14 @@ class _HomePageState extends State<HomePage> {
               child: Center(
                 child: Stack(
                   children: [
+                    Missile(
+                      missileX: missileX,
+                      missileY: missileY,
+                      missileHeight: missileHeight,
+                    ),
                     MyPlayer(
                       playerX: playerX,
-                    )
+                    ),
                   ],
                 ),
               ),
