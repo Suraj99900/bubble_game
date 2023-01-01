@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:bubble_game/ball.dart';
 import 'package:bubble_game/button.dart';
 import 'package:bubble_game/missile.dart';
 import 'package:bubble_game/player.dart';
@@ -13,6 +14,8 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
+enum direction { LEFT, RIGHT }
+
 class _HomePageState extends State<HomePage> {
   static double playerX = 0;
 
@@ -24,12 +27,37 @@ class _HomePageState extends State<HomePage> {
   double missileY = 1;
   double missileHeight = 10;
 
+  //ball variables
+  double ballX = 0.03;
+  double ballY = 0;
+  var ballDirection = direction.LEFT;
+  //start game function
+  void startGame() {
+    Timer.periodic(Duration(milliseconds: 50), (timer) {
+      if (ballX - 0.03 < -1) {
+        ballDirection = direction.RIGHT;
+      } else if (ballX + 0.03 > 1) {
+        ballDirection = direction.LEFT;
+      }
+      if (ballDirection == direction.LEFT) {
+        setState(() {
+          ballX -= 0.03;
+        });
+      } else if (ballDirection == direction.RIGHT) {
+        setState(() {
+          ballX += 0.03;
+        });
+      }
+    });
+  }
+
+  //moving player function
   void moveLeft() {
     setState(() {
-      if (playerX - 0.2 < -1) {
+      if (playerX - 0.1 < -1) {
         //do nothing
       } else {
-        playerX -= 0.2;
+        playerX -= 0.1;
       }
 
       // only make the x coordinate the same when it isn't in the middle of a shot
@@ -41,10 +69,10 @@ class _HomePageState extends State<HomePage> {
 
   void moveRight() {
     setState(() {
-      if (playerX + 0.2 > 1) {
+      if (playerX + 0.1 > 1) {
         //do nothing
       } else {
-        playerX += 0.2;
+        playerX += 0.1;
       }
 
       // only make the x coordinate the same when it isn't in the middle of a shot
@@ -103,6 +131,7 @@ class _HomePageState extends State<HomePage> {
               child: Center(
                 child: Stack(
                   children: [
+                    MyBall(ballX: ballX, ballY: ballY), //MyBall
                     Missile(
                       missileX: missileX,
                       missileY: missileY,
@@ -122,6 +151,10 @@ class _HomePageState extends State<HomePage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
+                MyButton(
+                  icon: Icons.play_arrow,
+                  function: startGame,
+                ),
                 MyButton(
                   icon: Icons.arrow_back,
                   function: moveLeft,
