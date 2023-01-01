@@ -16,6 +16,9 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   static double playerX = 0;
 
+  //for midshot fire
+  bool midShot = false;
+
   //missilevariable
   double missileX = playerX;
   double missileY = 1;
@@ -28,7 +31,11 @@ class _HomePageState extends State<HomePage> {
       } else {
         playerX -= 0.2;
       }
-      missileX = playerX;
+
+      // only make the x coordinate the same when it isn't in the middle of a shot
+      if (!midShot) {
+        missileX = playerX;
+      }
     });
   }
 
@@ -39,22 +46,33 @@ class _HomePageState extends State<HomePage> {
       } else {
         playerX += 0.2;
       }
-      missileX = playerX;
+
+      // only make the x coordinate the same when it isn't in the middle of a shot
+      if (!midShot) {
+        missileX = playerX;
+      }
     });
   }
 
   void moveFire() {
-    Timer.periodic(Duration(milliseconds: 20), (timer) {
-      if (missileHeight > MediaQuery.of(context).size.height * 3 / 4) {
-        //stop missile
-        resetMissile();
-        timer.cancel();
-      } else {
+    if (midShot == false) {
+      Timer.periodic(Duration(milliseconds: 20), (timer) {
+        //shots fired
+        midShot = true;
+
+        // missile grow til it hit's the top of the screen
         setState(() {
           missileHeight += 10;
         });
-      }
-    });
+
+        if (missileHeight > MediaQuery.of(context).size.height * 3 / 4) {
+          //stop missile
+          resetMissile();
+          timer.cancel();
+          midShot = false;
+        }
+      });
+    }
   }
 
   void resetMissile() {
