@@ -28,30 +28,68 @@ class _HomePageState extends State<HomePage> {
   double missileHeight = 10;
 
   //ball variables
-  double ballX = 0.03;
+  double ballX = 0.05;
   double ballY = 0;
   var ballDirection = direction.LEFT;
   //start game function
   void startGame() {
-    Timer.periodic(Duration(milliseconds: 50), (timer) {
-      if (ballX - 0.03 < -1) {
-        //  if the ball hits the left , then change direction to right
-        ballDirection = direction.RIGHT;
-      } else if (ballX + 0.03 > 1) {
-        //  if the ball hits the left , then change direction to right
-        ballDirection = direction.LEFT;
+    double time = 0;
+    double height = 0;
+    double velocity = 100; //show jump of the ball
+
+    Timer.periodic(Duration(milliseconds: 10), (timer) {
+      // quadratic equation that modals a bounce (upside down prabola)
+      height = -5 * time * time + velocity * time;
+      // if the ball reach the ground ,reset the jump
+      if (height < 0) {
+        time = 0;
       }
-      // move the ball in the correct direction
-      if (ballDirection == direction.LEFT) {
-        setState(() {
-          ballX -= 0.03;
-        });
-      } else if (ballDirection == direction.RIGHT) {
-        setState(() {
-          ballX += 0.03;
-        });
-      }
+      setState(() {
+        ballY = heightToCoordinate(height);
+
+        if (ballX - 0.005 < -1) {
+          //  if the ball hits the left , then change direction to right
+          ballDirection = direction.RIGHT;
+        } else if (ballX + 0.005 > 1) {
+          //  if the ball hits the left , then change direction to right
+          ballDirection = direction.LEFT;
+        }
+        // move the ball in the correct direction
+        if (ballDirection == direction.LEFT) {
+          setState(() {
+            ballX -= 0.005;
+          });
+        } else if (ballDirection == direction.RIGHT) {
+          setState(() {
+            ballX += 0.005;
+          });
+        }
+
+        // check if ball hit's the ball
+        if (playerDies()) {
+          timer.cancel();
+          _showDialog();
+        }
+        //keep going the ball
+        time += 0.1;
+      });
     });
+  }
+
+  void _showDialog() {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            backgroundColor: Colors.grey,
+            title: Center(
+              child: Text(
+                "Game Over !",
+                style: TextStyle(color: Colors.white70),
+              ),
+            ),
+          );
+        });
   }
 
   //moving player function
@@ -101,13 +139,12 @@ class _HomePageState extends State<HomePage> {
 
           resetMissile();
           timer.cancel();
-          midShot = false;
         }
         //check if missile has hit ball
         if (ballY > heightToCoordinate(missileHeight) &&
             (ballX - missileX).abs() < 0.03) {
           resetMissile();
-          ballY = 5;
+          ballX = 5;
           timer.cancel();
         }
       });
@@ -117,13 +154,23 @@ class _HomePageState extends State<HomePage> {
   // convert hight to coordinate
   double heightToCoordinate(double height) {
     double totalHeight = MediaQuery.of(context).size.height * 3 / 4;
-    double missileY = 1 - 2 * height / totalHeight;
-    return missileY;
+    double position = 1 - 2 * height / totalHeight;
+    return position;
   }
 
   void resetMissile() {
     missileX = playerX;
     missileHeight = 10;
+    midShot = false;
+  }
+
+  bool playerDies() {
+    //if the ball touch the player {game over}
+    if ((ballX - playerX).abs() < 0.05 && ballY > 0.95) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   @override
